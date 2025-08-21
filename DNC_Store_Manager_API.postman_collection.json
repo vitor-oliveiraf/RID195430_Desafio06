@@ -1,0 +1,660 @@
+{
+  "info": {
+    "_postman_id": "dnc-store-manager-api",
+    "name": "DNC Store Manager API",
+    "description": "Collection completa para as APIs de Vendas e Pedidos do DNC Store Manager",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Vendas",
+      "item": [
+        {
+          "name": "Criar Venda",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"clienteNome\": \"João Silva\",\n  \"clienteEmail\": \"joao@email.com\",\n  \"itens\": [\n    {\n      \"produtoId\": 1,\n      \"nome\": \"Produto A\",\n      \"quantidade\": 2,\n      \"precoUnitario\": 25.50,\n      \"desconto\": 5.00\n    },\n    {\n      \"produtoId\": 2,\n      \"nome\": \"Produto B\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 15.00\n    }\n  ],\n  \"formaPagamento\": \"pix\",\n  \"observacoes\": \"Entrega urgente\",\n  \"vendedorId\": 1,\n  \"vendedorNome\": \"Maria Santos\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vendas",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas"]
+            },
+            "description": "Criar uma nova venda com itens, cliente e vendedor"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Venda por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas/{{venda_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "{{venda_id}}"]
+            },
+            "description": "Buscar uma venda específica pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Todas as Vendas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas"]
+            },
+            "description": "Listar todas as vendas cadastradas"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Vendas por Cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas/cliente/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "cliente", "1"]
+            },
+            "description": "Buscar todas as vendas de um cliente específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Vendas por Vendedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas/vendedor/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "vendedor", "1"]
+            },
+            "description": "Buscar todas as vendas de um vendedor específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Vendas por Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas/status/pendente",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "status", "pendente"]
+            },
+            "description": "Buscar vendas por status (pendente, pago, cancelado, reembolsado)"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Vendas por Produto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas/produto/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "produto", "1"]
+            },
+            "description": "Buscar vendas que contêm um produto específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Vendas por Período",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas/periodo?startDate=2024-01-01&endDate=2024-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "periodo"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31"
+                }
+              ]
+            },
+            "description": "Buscar vendas em um período específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Status da Venda",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"pago\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vendas/{{venda_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "{{venda_id}}", "status"]
+            },
+            "description": "Atualizar status da venda (pendente → pago → reembolsado)"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar Venda",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Cliente desistiu da compra\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vendas/{{venda_id}}/cancelar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "{{venda_id}}", "cancelar"]
+            },
+            "description": "Cancelar uma venda pendente"
+          },
+          "response": []
+        },
+        {
+          "name": "Reembolsar Venda",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Produto com defeito\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vendas/{{venda_id}}/reembolsar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "{{venda_id}}", "reembolsar"]
+            },
+            "description": "Reembolsar uma venda paga"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Estatísticas de Vendas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vendas/estatisticas?startDate=2024-01-01&endDate=2024-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas", "estatisticas"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31"
+                }
+              ]
+            },
+            "description": "Obter estatísticas gerais de vendas"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para gerenciamento de vendas"
+    },
+    {
+      "name": "Pedidos",
+      "item": [
+        {
+          "name": "Criar Pedido - Delivery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"clienteNome\": \"Ana Costa\",\n  \"clienteEmail\": \"ana@email.com\",\n  \"itens\": [\n    {\n      \"produtoId\": 1,\n      \"nome\": \"Hambúrguer\",\n      \"quantidade\": 2,\n      \"precoUnitario\": 18.90,\n      \"observacoes\": \"Sem cebola\"\n    },\n    {\n      \"produtoId\": 2,\n      \"nome\": \"Batata Frita\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 12.50\n    }\n  ],\n  \"descontoTotal\": 5.00,\n  \"taxaEntrega\": 8.00,\n  \"formaPagamento\": \"cartao_credito\",\n  \"tipoEntrega\": \"delivery\",\n  \"informacoesEntrega\": {\n    \"endereco\": \"Rua das Flores, 123\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"São Paulo\",\n    \"estado\": \"SP\",\n    \"cep\": \"01234-567\",\n    \"complemento\": \"Apto 45\",\n    \"telefone\": \"11987654321\",\n    \"instrucoes\": \"Entregar no portão\"\n  },\n  \"observacoes\": \"Entregar antes das 20h\",\n  \"vendedorId\": 1,\n  \"vendedorNome\": \"Carlos Silva\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pedidos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos"]
+            },
+            "description": "Criar um pedido de delivery com informações de entrega"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Pedido - Retirada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 2,\n  \"clienteNome\": \"Pedro Santos\",\n  \"clienteEmail\": \"pedro@email.com\",\n  \"itens\": [\n    {\n      \"produtoId\": 3,\n      \"nome\": \"Pizza Margherita\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 35.00\n    }\n  ],\n  \"formaPagamento\": \"dinheiro\",\n  \"tipoEntrega\": \"retirada\",\n  \"observacoes\": \"Retirar em 30 minutos\",\n  \"vendedorId\": 1,\n  \"vendedorNome\": \"Carlos Silva\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pedidos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos"]
+            },
+            "description": "Criar um pedido para retirada no local"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedido por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/{{pedido_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "{{pedido_id}}"]
+            },
+            "description": "Buscar um pedido específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Todos os Pedidos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos"]
+            },
+            "description": "Listar todos os pedidos cadastrados"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos por Cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/cliente/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "cliente", "1"]
+            },
+            "description": "Buscar todos os pedidos de um cliente específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos por Vendedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/vendedor/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "vendedor", "1"]
+            },
+            "description": "Buscar todos os pedidos de um vendedor específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos por Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/status/recebido",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "status", "recebido"]
+            },
+            "description": "Buscar pedidos por status (recebido, confirmado, preparando, pronto, em_entrega, entregue, cancelado)"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos por Tipo de Entrega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/tipo-entrega/delivery",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "tipo-entrega", "delivery"]
+            },
+            "description": "Buscar pedidos por tipo de entrega (delivery ou retirada)"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos por Produto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/produto/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "produto", "1"]
+            },
+            "description": "Buscar pedidos que contêm um produto específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos por Período",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/periodo?startDate=2024-01-01&endDate=2024-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "periodo"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31"
+                }
+              ]
+            },
+            "description": "Buscar pedidos em um período específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Status do Pedido",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/{{pedido_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "{{pedido_id}}", "status"]
+            },
+            "description": "Atualizar status do pedido (recebido → confirmado → preparando → pronto → em_entrega → entregue)"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Tempo Estimado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tempoEstimado\": 45\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/{{pedido_id}}/tempo-estimado",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "{{pedido_id}}", "tempo-estimado"]
+            },
+            "description": "Atualizar tempo estimado de entrega (em minutos)"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar Pedido",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Cliente desistiu do pedido\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/{{pedido_id}}/cancelar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "{{pedido_id}}", "cancelar"]
+            },
+            "description": "Cancelar um pedido que não foi entregue"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos Urgentes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/urgentes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "urgentes"]
+            },
+            "description": "Buscar pedidos prontos há mais de 30 minutos (urgentes)"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pedidos em Preparo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/em-preparo",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "em-preparo"]
+            },
+            "description": "Buscar pedidos com status confirmado ou preparando"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Estatísticas de Pedidos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/estatisticas?startDate=2024-01-01&endDate=2024-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "estatisticas"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31"
+                }
+              ]
+            },
+            "description": "Obter estatísticas gerais de pedidos"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Estatísticas por Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos/estatisticas/por-status?startDate=2024-01-01&endDate=2024-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos", "estatisticas", "por-status"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31"
+                }
+              ]
+            },
+            "description": "Obter estatísticas de pedidos agrupadas por status"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para gerenciamento de pedidos"
+    },
+    {
+      "name": "Exemplos de Dados",
+      "item": [
+        {
+          "name": "Exemplo - Venda Completa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"clienteNome\": \"Maria Oliveira\",\n  \"clienteEmail\": \"maria.oliveira@email.com\",\n  \"itens\": [\n    {\n      \"produtoId\": 1,\n      \"nome\": \"Smartphone Galaxy S21\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 2999.99,\n      \"desconto\": 200.00\n    },\n    {\n      \"produtoId\": 2,\n      \"nome\": \"Capa Protetora\",\n      \"quantidade\": 2,\n      \"precoUnitario\": 49.90\n    },\n    {\n      \"produtoId\": 3,\n      \"nome\": \"Carregador Wireless\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 89.90\n    }\n  ],\n  \"formaPagamento\": \"cartao_credito\",\n  \"observacoes\": \"Presente de aniversário\",\n  \"vendedorId\": 1,\n  \"vendedorNome\": \"João Vendedor\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vendas",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendas"]
+            },
+            "description": "Exemplo completo de uma venda de eletrônicos"
+          },
+          "response": []
+        },
+        {
+          "name": "Exemplo - Pedido Delivery Completo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 2,\n  \"clienteNome\": \"Carlos Eduardo\",\n  \"clienteEmail\": \"carlos.eduardo@email.com\",\n  \"itens\": [\n    {\n      \"produtoId\": 10,\n      \"nome\": \"Pizza Margherita Grande\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 45.00,\n      \"observacoes\": \"Borda recheada\"\n    },\n    {\n      \"produtoId\": 11,\n      \"nome\": \"Refrigerante Coca-Cola 2L\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 8.50\n    },\n    {\n      \"produtoId\": 12,\n      \"nome\": \"Batata Frita Grande\",\n      \"quantidade\": 1,\n      \"precoUnitario\": 15.00\n    }\n  ],\n  \"descontoTotal\": 10.00,\n  \"taxaEntrega\": 5.00,\n  \"formaPagamento\": \"pix\",\n  \"tipoEntrega\": \"delivery\",\n  \"informacoesEntrega\": {\n    \"endereco\": \"Av. Paulista, 1000\",\n    \"bairro\": \"Bela Vista\",\n    \"cidade\": \"São Paulo\",\n    \"estado\": \"SP\",\n    \"cep\": \"01310-100\",\n    \"complemento\": \"Sala 1501\",\n    \"telefone\": \"11999887766\",\n    \"instrucoes\": \"Entregar na portaria, não subir\"\n  },\n  \"observacoes\": \"Entregar antes das 21h\",\n  \"vendedorId\": 2,\n  \"vendedorNome\": \"Ana Atendente\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pedidos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "pedidos"]
+            },
+            "description": "Exemplo completo de um pedido de delivery de pizza"
+          },
+          "response": []
+        }
+      ],
+      "description": "Exemplos práticos de dados para teste"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Teste automático para capturar IDs das respostas",
+          "if (pm.response.code === 201 || pm.response.code === 200) {",
+          "    const response = pm.response.json();",
+          "    if (response.data && response.data.id) {",
+          "        // Capturar ID da venda criada",
+          "        if (pm.request.url.path.includes('vendas')) {",
+          "            pm.environment.set('venda_id', response.data.id);",
+          "        }",
+          "        // Capturar ID do pedido criado",
+          "        if (pm.request.url.path.includes('pedidos')) {",
+          "            pm.environment.set('pedido_id', response.data.id);",
+          "        }",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "venda_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pedido_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
+
