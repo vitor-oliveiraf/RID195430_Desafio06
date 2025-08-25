@@ -27,6 +27,18 @@ A collection já vem com variáveis pré-configuradas:
 - **Descrição**: Criar uma nova venda
 - **Body**: Dados completos da venda com itens, cliente e vendedor
 
+### **Criar Venda a partir de Pedido**
+
+- **Endpoint**: `POST /api/vendas/from-pedido`
+- **Descrição**: Criar venda automaticamente a partir de um pedido existente
+- **Body**: `{"pedidoId": "{{pedido_id}}"}`
+- **Funcionalidades**:
+  - Carrega automaticamente dados do cliente e itens do pedido
+  - Valida estoque novamente (sem debitar - já reservado no pedido)
+  - Atualiza status do pedido para "vendido"
+  - Evita duplicação de dados
+  - **Importante**: Não debita estoque novamente (já foi debitado na criação do pedido)
+
 ### **Buscar Venda por ID**
 
 - **Endpoint**: `GET /api/vendas/{{venda_id}}`
@@ -85,12 +97,6 @@ A collection já vem com variáveis pré-configuradas:
 - **Endpoint**: `PATCH /api/vendas/{{venda_id}}/reembolsar`
 - **Descrição**: Reembolsar venda paga
 - **Body**: `{"motivo": "Produto com defeito"}`
-
-### **Obter Estatísticas de Vendas**
-
-- **Endpoint**: `GET /api/vendas/estatisticas?startDate=2024-01-01&endDate=2024-12-31`
-- **Descrição**: Estatísticas gerais de vendas
-- **Query Params**: `startDate`, `endDate` (opcionais)
 
 ## 📦 **MÓDULO PEDIDOS**
 
@@ -251,8 +257,9 @@ A collection possui scripts que capturam automaticamente os IDs das vendas e ped
 
 ### **Status de Pedidos**
 
-- `recebido` → `confirmado` → `preparando` → `pronto` → `em_entrega` → `entregue`
-- Qualquer status → `cancelado` (exceto entregue)
+- `recebido` → `confirmado` → `preparando` → `pronto` → `entregue`
+- `pronto` → `vendido` (quando venda é criada a partir do pedido)
+- Qualquer status → `cancelado` (exceto entregue e vendido)
 
 ### **Formas de Pagamento**
 
@@ -262,7 +269,42 @@ A collection possui scripts que capturam automaticamente os IDs das vendas e ped
 - `pix`
 - `transferencia`
 
+## 🎯 **Exemplo Prático - Fluxo Completo**
+
+### **Cenário: Cliente faz pedido e depois concretiza a venda**
+
+1. **Criar Pedido**
+
+   ```bash
+   POST /api/pedidos
+   {
+     "clienteId": 1,
+     "itens": [
+       {
+         "produtoId": 1,
+         "quantidade": 2
+       }
+     ]
+   }
+   ```
+
+2. **Pedido é processado** (status: recebido → confirmado → preparando → pronto)
+
+3. **Cliente decide comprar** - Criar venda a partir do pedido
+
+   ```bash
+   POST /api/vendas/from-pedido
+   {
+     "pedidoId": "{{pedido_id}}"
+   }
+   ```
+
+4. **Resultado**:
+   - Venda criada automaticamente com todos os dados do pedido
+   - Pedido atualizado para status "vendido"
+   - Estoque mantido (já estava reservado desde a criação do pedido)
+   - Dados do cliente e itens carregados automaticamente
+
 ## 🚀 **Pronto para Usar!**
 
 Agora você pode testar todas as funcionalidades da API de Vendas e Pedidos do DNC Store Manager de forma organizada e eficiente! 🎉
-

@@ -4,17 +4,7 @@ import { CreateVendaDTO } from "../dtos/CreateVendaDTO";
 export class VendaRepository {
   async create(data: CreateVendaDTO): Promise<IVenda> {
     try {
-      // Calcular preços totais dos itens
-      const itensComPrecoTotal = data.itens.map((item) => ({
-        ...item,
-        precoTotal: item.quantidade * item.precoUnitario - (item.desconto || 0),
-      }));
-
-      const venda = new Venda({
-        ...data,
-        itens: itensComPrecoTotal,
-      });
-
+      const venda = new Venda(data);
       const savedVenda = await venda.save();
 
       if (!savedVenda) {
@@ -36,8 +26,8 @@ export class VendaRepository {
     return await Venda.find({ clienteId }).sort({ createdAt: -1 });
   }
 
-  async findByVendedorId(vendedorId: number): Promise<IVenda[]> {
-    return await Venda.find({ vendedorId }).sort({ createdAt: -1 });
+  async findByPedidoId(pedidoId: string): Promise<IVenda[]> {
+    return await Venda.find({ pedidoId }).sort({ createdAt: -1 });
   }
 
   async findByStatus(status: string): Promise<IVenda[]> {
@@ -69,30 +59,6 @@ export class VendaRepository {
     return await Venda.find({
       "itens.produtoId": produtoId,
     }).sort({ createdAt: -1 });
-  }
-
-  async getEstatisticasVendas(startDate?: Date, endDate?: Date) {
-    const matchStage: any = {};
-
-    if (startDate && endDate) {
-      matchStage.createdAt = {
-        $gte: startDate,
-        $lte: endDate,
-      };
-    }
-
-    return await Venda.aggregate([
-      { $match: matchStage },
-      {
-        $group: {
-          _id: null,
-          totalVendas: { $sum: 1 },
-          totalReceita: { $sum: "$total" },
-          mediaTicket: { $avg: "$total" },
-          totalItens: { $sum: { $size: "$itens" } },
-        },
-      },
-    ]);
   }
 
   async delete(id: string): Promise<boolean> {

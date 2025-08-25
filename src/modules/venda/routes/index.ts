@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { VendaController } from "../controllers/VendaController";
-import { CreateVendaSchema } from "../dtos/CreateVendaDTO";
+import {
+  CreateVendaSchema,
+  CreateVendaFromPedidoSchema,
+} from "../dtos/CreateVendaDTO";
 import {
   UpdateStatusSchema,
   CancelarVendaSchema,
@@ -18,16 +21,28 @@ router.post(
   vendaController.create.bind(vendaController)
 );
 
+// Rota para criar venda a partir de um pedido
+router.post(
+  "/from-pedido",
+  validateRequest(CreateVendaFromPedidoSchema),
+  vendaController.createFromPedido.bind(vendaController)
+);
+
 // Rotas de consulta
 router.get("/", vendaController.findAll.bind(vendaController));
+
+// Rotas específicas devem vir ANTES das rotas com parâmetros dinâmicos
+router.get("/periodo", vendaController.findByDateRange.bind(vendaController));
+
+// Rotas com parâmetros dinâmicos devem vir DEPOIS das rotas específicas
 router.get("/:id", vendaController.findById.bind(vendaController));
 router.get(
   "/cliente/:clienteId",
   vendaController.findByClienteId.bind(vendaController)
 );
 router.get(
-  "/vendedor/:vendedorId",
-  vendaController.findByVendedorId.bind(vendaController)
+  "/pedido/:pedidoId",
+  vendaController.findByPedidoId.bind(vendaController)
 );
 router.get(
   "/status/:status",
@@ -36,15 +51,6 @@ router.get(
 router.get(
   "/produto/:produtoId",
   vendaController.findByProduto.bind(vendaController)
-);
-
-// Rotas de período
-router.get("/periodo", vendaController.findByDateRange.bind(vendaController));
-
-// Rotas de estatísticas
-router.get(
-  "/estatisticas",
-  vendaController.getEstatisticas.bind(vendaController)
 );
 
 // Rotas de atualização de status

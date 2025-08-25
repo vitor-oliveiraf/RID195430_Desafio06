@@ -1,6 +1,6 @@
 import { PedidoRepository } from "../repositories/PedidoRepository";
 import {
-  CreatePedidoDTO,
+  CreatePedidoSimpleDTO,
   CreatePedidoResponseDTO,
 } from "../dtos/CreatePedidoDTO";
 import { IPedido } from "../entities/Pedido";
@@ -28,30 +28,18 @@ export class PedidoService {
         nome: item.nome,
         quantidade: item.quantidade,
         precoUnitario: item.precoUnitario,
-        precoTotal: item.precoTotal,
-        observacoes: item.observacoes,
       })),
-      subtotal: pedido.subtotal,
-      descontoTotal: pedido.descontoTotal,
-      taxaEntrega: pedido.taxaEntrega,
       total: pedido.total,
-      formaPagamento: pedido.formaPagamento,
       status: pedido.status,
-      tipoEntrega: pedido.tipoEntrega,
-      informacoesEntrega: pedido.informacoesEntrega,
-      tempoEstimado: pedido.tempoEstimado,
-      observacoes: pedido.observacoes,
-      vendedorId: pedido.vendedorId,
-      vendedorNome: pedido.vendedorNome,
       createdAt: pedido.createdAt,
       updatedAt: pedido.updatedAt,
     };
   }
 
   // Criar novo pedido
-  async create(data: CreatePedidoDTO): Promise<CreatePedidoResponseDTO> {
+  async create(data: CreatePedidoSimpleDTO): Promise<CreatePedidoResponseDTO> {
     try {
-      // 1. Validar se cliente existe
+      // 1. Validar se cliente existe e buscar dados
       const cliente = await this.prisma.usuario.findUnique({
         where: { id: data.clienteId },
       });
@@ -60,35 +48,25 @@ export class PedidoService {
         throw new AppError("Cliente não encontrado", 404);
       }
 
-      // 2. Validar se vendedor existe
-      const vendedor = await this.prisma.usuario.findUnique({
-        where: { id: data.vendedorId },
+      // pegar dados do produto para mapToResponseDTO
+      const produtos = await this.prisma.produto.findMany({
+        where: { id: { in: data.itens.map((item) => item.produtoId) } },
       });
 
-      if (!vendedor) {
-        throw new AppError("Vendedor não encontrado", 404);
-      }
-
-      // 3. Validar estoque e produtos
+      // 2. Validar estoque e produtos
       await this.validarEstoque(data.itens);
 
-      // 4. Validar informações de entrega para delivery
-      if (data.tipoEntrega === "delivery" && !data.informacoesEntrega) {
-        throw new AppError(
-          "Informações de entrega são obrigatórias para pedidos delivery",
-          400
-        );
-      }
+      // 3. Preparar dados do pedido com informações do cliente
+      const pedidoData = {
+        ...data,
+        clienteNome: cliente.nome,
+        clienteEmail: cliente.email,
+      };
 
-      // 5. Calcular tempo estimado se não fornecido
-      if (!data.tempoEstimado) {
-        data.tempoEstimado = this.calcularTempoEstimado(data);
-      }
+      // 4. Criar pedido
+      const pedido = await this.pedidoRepository.create(pedidoData);
 
-      // 6. Criar pedido
-      const pedido = await this.pedidoRepository.create(data);
-
-      // 7. Atualizar estoque (debitar produtos)
+      // 5. Atualizar estoque (debitar produtos)
       await this.atualizarEstoque(data.itens, "debitar");
 
       const responseDTO = this.mapToResponseDTO(pedido);
@@ -123,25 +101,9 @@ export class PedidoService {
     return pedidos.map((pedido) => this.mapToResponseDTO(pedido));
   }
 
-  // Buscar pedidos por vendedor
-  async findByVendedorId(
-    vendedorId: number
-  ): Promise<CreatePedidoResponseDTO[]> {
-    const pedidos = await this.pedidoRepository.findByVendedorId(vendedorId);
-    return pedidos.map((pedido) => this.mapToResponseDTO(pedido));
-  }
-
   // Buscar pedidos por status
   async findByStatus(status: string): Promise<CreatePedidoResponseDTO[]> {
     const pedidos = await this.pedidoRepository.findByStatus(status);
-    return pedidos.map((pedido) => this.mapToResponseDTO(pedido));
-  }
-
-  // Buscar pedidos por tipo de entrega
-  async findByTipoEntrega(
-    tipoEntrega: string
-  ): Promise<CreatePedidoResponseDTO[]> {
-    const pedidos = await this.pedidoRepository.findByTipoEntrega(tipoEntrega);
     return pedidos.map((pedido) => this.mapToResponseDTO(pedido));
   }
 
@@ -174,27 +136,6 @@ export class PedidoService {
     );
     if (!pedidoAtualizado) {
       throw new AppError("Erro ao atualizar status do pedido", 500);
-    }
-
-    return this.mapToResponseDTO(pedidoAtualizado);
-  }
-
-  // Atualizar tempo estimado
-  async updateTempoEstimado(
-    id: string,
-    tempoEstimado: number
-  ): Promise<CreatePedidoResponseDTO> {
-    const pedido = await this.pedidoRepository.findById(id);
-    if (!pedido) {
-      throw new AppError("Pedido não encontrado", 404);
-    }
-
-    const pedidoAtualizado = await this.pedidoRepository.updateTempoEstimado(
-      id,
-      tempoEstimado
-    );
-    if (!pedidoAtualizado) {
-      throw new AppError("Erro ao atualizar tempo estimado", 500);
     }
 
     return this.mapToResponseDTO(pedidoAtualizado);
@@ -261,12 +202,6 @@ export class PedidoService {
     return await this.pedidoRepository.getPedidosPorStatus(startDate, endDate);
   }
 
-  // Obter pedidos urgentes
-  async getPedidosUrgentes(): Promise<CreatePedidoResponseDTO[]> {
-    const pedidos = await this.pedidoRepository.getPedidosUrgentes();
-    return pedidos.map((pedido) => this.mapToResponseDTO(pedido));
-  }
-
   // Obter pedidos em preparo
   async getPedidosEmPreparo(): Promise<CreatePedidoResponseDTO[]> {
     const pedidos = await this.pedidoRepository.getPedidosEmPreparo();
@@ -276,23 +211,57 @@ export class PedidoService {
   // Validar estoque disponível
   private async validarEstoque(itens: any[]): Promise<void> {
     for (const item of itens) {
+      // 1. Validar se o produto existe na tabela de produtos
+      const produto = await this.prisma.produto.findUnique({
+        where: { id: item.produtoId },
+      });
+
+      if (!produto) {
+        throw new AppError(
+          `Produto com ID ${item.produtoId} não encontrado`,
+          404
+        );
+      }
+
+      // 2. Validar se o produto existe no estoque
       const estoque = await this.prisma.estoque.findFirst({
         where: { produtoId: item.produtoId },
       });
 
       if (!estoque) {
         throw new AppError(
-          `Produto ${item.nome} não encontrado no estoque`,
+          `Produto ${produto.nome} não encontrado no estoque`,
           404
         );
       }
 
-      if (estoque.quantidade < item.quantidade) {
+      // 3. Validar se há quantidade disponível (maior que zero)
+      if (estoque.quantidade <= 0) {
         throw new AppError(
-          `Quantidade insuficiente do produto ${item.nome}. Disponível: ${estoque.quantidade}`,
+          `Produto ${produto.nome} está sem estoque (quantidade: ${estoque.quantidade})`,
           400
         );
       }
+
+      // 4. Validar se há quantidade suficiente
+      if (estoque.quantidade < item.quantidade) {
+        throw new AppError(
+          `Quantidade insuficiente do produto ${produto.nome}. Disponível: ${estoque.quantidade}, Solicitado: ${item.quantidade}`,
+          400
+        );
+      }
+
+      // 5. Validar se a quantidade solicitada é válida
+      if (item.quantidade <= 0) {
+        throw new AppError(
+          `Quantidade inválida para o produto ${produto.nome}. Deve ser maior que zero.`,
+          400
+        );
+      }
+
+      console.log(
+        `✅ Produto ${produto.nome} validado: ${item.quantidade}/${estoque.quantidade}`
+      );
     }
   }
 
@@ -320,21 +289,6 @@ export class PedidoService {
     }
   }
 
-  // Calcular tempo estimado baseado no tipo de entrega e quantidade de itens
-  private calcularTempoEstimado(data: CreatePedidoDTO): number {
-    let tempoBase = 15; // Tempo base em minutos
-
-    // Adicionar tempo por item
-    tempoBase += data.itens.length * 5;
-
-    // Adicionar tempo para delivery
-    if (data.tipoEntrega === "delivery") {
-      tempoBase += 20; // Tempo adicional para entrega
-    }
-
-    return tempoBase;
-  }
-
   // Validar transição de status
   private validarTransicaoStatus(
     statusAtual: string,
@@ -344,9 +298,9 @@ export class PedidoService {
       recebido: ["confirmado", "cancelado"],
       confirmado: ["preparando", "cancelado"],
       preparando: ["pronto", "cancelado"],
-      pronto: ["em_entrega", "cancelado"],
-      em_entrega: ["entregue", "cancelado"],
+      pronto: ["entregue", "cancelado"],
       entregue: [], // Não pode mudar
+      vendido: [], // Não pode mudar (status definido automaticamente)
       cancelado: [], // Não pode mudar
     };
 
@@ -376,16 +330,6 @@ export class PedidoService {
 
       case "pronto":
         // Pedido pronto - notificar cliente
-        break;
-
-      case "em_entrega":
-        // Pedido em entrega - apenas para delivery
-        if (pedido.tipoEntrega === "retirada") {
-          throw new AppError(
-            "Pedidos de retirada não podem ter status 'em_entrega'",
-            400
-          );
-        }
         break;
 
       case "entregue":

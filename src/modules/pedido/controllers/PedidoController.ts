@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PedidoService } from "../services/PedidoService";
-import { CreatePedidoDTO } from "../dtos/CreatePedidoDTO";
+import { CreatePedidoSimpleDTO } from "../dtos/CreatePedidoDTO";
 import { response } from "../../../shared/utils/response";
 
 export class PedidoController {
@@ -13,7 +13,7 @@ export class PedidoController {
   // Criar novo pedido
   async create(req: Request, res: Response): Promise<void> {
     try {
-      const data: CreatePedidoDTO = req.body;
+      const data: CreatePedidoSimpleDTO = req.body;
       const pedido = await this.pedidoService.create(data);
 
       response(res, 201, "Pedido criado com sucesso", pedido);
@@ -74,33 +74,6 @@ export class PedidoController {
     }
   }
 
-  // Buscar pedidos por vendedor
-  async findByVendedorId(req: Request, res: Response): Promise<void> {
-    try {
-      const { vendedorId } = req.params;
-
-      if (!vendedorId) {
-        response(res, 400, "ID do vendedor é obrigatório");
-        return;
-      }
-
-      const vendedorIdNum = parseInt(vendedorId);
-      if (isNaN(vendedorIdNum)) {
-        response(res, 400, "ID do vendedor deve ser um número válido");
-        return;
-      }
-
-      const pedidos = await this.pedidoService.findByVendedorId(vendedorIdNum);
-      response(res, 200, "Pedidos do vendedor encontrados", pedidos);
-    } catch (error: any) {
-      response(
-        res,
-        error.statusCode || 500,
-        error.message || "Erro interno do servidor"
-      );
-    }
-  }
-
   // Buscar pedidos por status
   async findByStatus(req: Request, res: Response): Promise<void> {
     try {
@@ -113,32 +86,6 @@ export class PedidoController {
 
       const pedidos = await this.pedidoService.findByStatus(status);
       response(res, 200, `Pedidos com status '${status}' encontrados`, pedidos);
-    } catch (error: any) {
-      response(
-        res,
-        error.statusCode || 500,
-        error.message || "Erro interno do servidor"
-      );
-    }
-  }
-
-  // Buscar pedidos por tipo de entrega
-  async findByTipoEntrega(req: Request, res: Response): Promise<void> {
-    try {
-      const { tipoEntrega } = req.params;
-
-      if (!tipoEntrega) {
-        response(res, 400, "Tipo de entrega é obrigatório");
-        return;
-      }
-
-      const pedidos = await this.pedidoService.findByTipoEntrega(tipoEntrega);
-      response(
-        res,
-        200,
-        `Pedidos com tipo de entrega '${tipoEntrega}' encontrados`,
-        pedidos
-      );
     } catch (error: any) {
       response(
         res,
@@ -185,42 +132,6 @@ export class PedidoController {
         `Status do pedido atualizado para '${status}'`,
         pedido
       );
-    } catch (error: any) {
-      response(
-        res,
-        error.statusCode || 500,
-        error.message || "Erro interno do servidor"
-      );
-    }
-  }
-
-  // Atualizar tempo estimado
-  async updateTempoEstimado(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const { tempoEstimado } = req.body;
-
-      if (!id) {
-        response(res, 400, "ID do pedido é obrigatório");
-        return;
-      }
-
-      if (!tempoEstimado) {
-        response(res, 400, "Tempo estimado é obrigatório");
-        return;
-      }
-
-      const tempoEstimadoNum = parseInt(tempoEstimado);
-      if (isNaN(tempoEstimadoNum) || tempoEstimadoNum <= 0) {
-        response(res, 400, "Tempo estimado deve ser um número positivo");
-        return;
-      }
-
-      const pedido = await this.pedidoService.updateTempoEstimado(
-        id,
-        tempoEstimadoNum
-      );
-      response(res, 200, "Tempo estimado atualizado com sucesso", pedido);
     } catch (error: any) {
       response(
         res,
@@ -380,20 +291,6 @@ export class PedidoController {
         end
       );
       response(res, 200, "Pedidos por status obtidos", pedidosPorStatus);
-    } catch (error: any) {
-      response(
-        res,
-        error.statusCode || 500,
-        error.message || "Erro interno do servidor"
-      );
-    }
-  }
-
-  // Obter pedidos urgentes
-  async getPedidosUrgentes(req: Request, res: Response): Promise<void> {
-    try {
-      const pedidos = await this.pedidoService.getPedidosUrgentes();
-      response(res, 200, "Pedidos urgentes encontrados", pedidos);
     } catch (error: any) {
       response(
         res,

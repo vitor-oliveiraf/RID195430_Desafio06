@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { VendaService } from "../services/VendaService";
-import { CreateVendaDTO } from "../dtos/CreateVendaDTO";
+import {
+  CreateVendaDTO,
+  CreateVendaFromPedidoDTO,
+} from "../dtos/CreateVendaDTO";
 import { response } from "../../../shared/utils/response";
 
 export class VendaController {
@@ -17,6 +20,21 @@ export class VendaController {
       const venda = await this.vendaService.create(data);
 
       response(res, 201, "Venda criada com sucesso", venda);
+    } catch (error: any) {
+      response(
+        res,
+        error.statusCode || 500,
+        error.message || "Erro interno do servidor"
+      );
+    }
+  }
+
+  // Criar venda a partir de um pedido
+  async createFromPedido(req: Request, res: Response): Promise<void> {
+    try {
+      const data: CreateVendaFromPedidoDTO = req.body;
+      const venda = await this.vendaService.createFromPedido(data.pedidoId);
+      response(res, 201, "Venda criada a partir do pedido com sucesso", venda);
     } catch (error: any) {
       response(
         res,
@@ -74,24 +92,18 @@ export class VendaController {
     }
   }
 
-  // Buscar vendas por vendedor
-  async findByVendedorId(req: Request, res: Response): Promise<void> {
+  // Buscar vendas por pedido
+  async findByPedidoId(req: Request, res: Response): Promise<void> {
     try {
-      const { vendedorId } = req.params;
+      const { pedidoId } = req.params;
 
-      if (!vendedorId) {
-        response(res, 400, "ID do vendedor é obrigatório");
+      if (!pedidoId) {
+        response(res, 400, "ID do pedido é obrigatório");
         return;
       }
 
-      const vendedorIdNum = parseInt(vendedorId);
-      if (isNaN(vendedorIdNum)) {
-        response(res, 400, "ID do vendedor deve ser um número válido");
-        return;
-      }
-
-      const vendas = await this.vendaService.findByVendedorId(vendedorIdNum);
-      response(res, 200, "Vendas do vendedor encontradas", vendas);
+      const vendas = await this.vendaService.findByPedidoId(pedidoId);
+      response(res, 200, "Vendas do pedido encontradas", vendas);
     } catch (error: any) {
       response(
         res,
@@ -269,40 +281,6 @@ export class VendaController {
 
       const vendas = await this.vendaService.findByProduto(produtoIdNum);
       response(res, 200, "Vendas do produto encontradas", vendas);
-    } catch (error: any) {
-      response(
-        res,
-        error.statusCode || 500,
-        error.message || "Erro interno do servidor"
-      );
-    }
-  }
-
-  // Obter estatísticas de vendas
-  async getEstatisticas(req: Request, res: Response): Promise<void> {
-    try {
-      const { startDate, endDate } = req.query;
-
-      let start: Date | undefined;
-      let end: Date | undefined;
-
-      if (startDate && endDate) {
-        start = new Date(startDate as string);
-        end = new Date(endDate as string);
-
-        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-          response(res, 400, "Datas devem estar no formato válido");
-          return;
-        }
-
-        if (start > end) {
-          response(res, 400, "Data inicial deve ser menor que a data final");
-          return;
-        }
-      }
-
-      const estatisticas = await this.vendaService.getEstatisticas(start, end);
-      response(res, 200, "Estatísticas de vendas obtidas", estatisticas);
     } catch (error: any) {
       response(
         res,
